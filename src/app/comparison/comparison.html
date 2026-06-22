@@ -1,0 +1,49 @@
+<h2>Összehasonlítás</h2>
+<p class="note">
+  Ugyanazt a regisztrációs formot mind a három megközelítés megvalósítja ebben a
+  demóban. Az alábbi táblázat a fő különbségeket emeli ki.
+</p>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Szempont</th>
+        <th>Template-driven</th>
+        <th>Reactive</th>
+        <th class="highlight">Signal Forms</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows; track row.aspect) {
+        <tr>
+          <th scope="row">{{ row.aspect }}</th>
+          <td>{{ row.template }}</td>
+          <td>{{ row.reactive }}</td>
+          <td class="highlight">{{ row.signal }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<h3>Egyedi control: a kódmennyiség különbsége</h3>
+<div class="code-grid">
+  <div>
+    <h4>Reactive — ControlValueAccessor</h4>
+    <pre>{{ cvaSnippet }}</pre>
+  </div>
+  <div>
+    <h4 class="highlight">Signal Forms — FormValueControl</h4>
+    <pre>{{ signalSnippet }}</pre>
+  </div>
+</div>
+
+<h3>Tanulságok</h3>
+<ul class="takeaways">
+  <li>A Signal Forms a <strong>modellt</strong> teszi a forrásnak, és köré épít — nem fordítva.</li>
+  <li>Az egyedi control <strong>4 metódus + provider</strong> helyett egyetlen <code>model()</code>.</li>
+  <li>Az állapot <strong>végig signal</strong>, így <code>computed</code>/<code>effect</code> közvetlenül használható, és a tesztelés szinkron.</li>
+  <li>Az async validáció <strong>resource + debounce</strong> beépítve, nem kézi Observable-kezelés.</li>
+  <li>Az Angular 21-ben developer preview-ként indult, az <strong>Angular 22-ben stabil</strong>, éles kódban használható (Material + Aria integrációval).</li>
+</ul>
