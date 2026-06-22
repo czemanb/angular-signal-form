@@ -1,53 +1,56 @@
+import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import {
   email,
   form,
   FormField,
+  FormRoot,
   min,
   minLength,
   required,
+  submit,
   validate,
   validateAsync,
 } from '@angular/forms/signals';
+import {
+  COUNTRIES,
+  emptyRegistration,
+  Registration,
+} from '../shared/registration.model';
 import { UsernameAvailabilityService } from '../shared/username-availability.service';
 import { StarRating } from '../shared/star-rating-signal/star-rating';
 
-interface SignupData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  username: string;
-  rating: number;
-}
-
 /**
- * SIGNAL FORMS – 4. lépés: FormValueControl – signal-alapú custom control.
+ * SIGNAL FORMS – 5. lépés: teljes regisztrációs form.
  *
- * A `StarRating` komponens a `FormValueControl<number>` interface-t valósítja meg.
- * A teljes szerződés egyetlen `value = model<number>(0)` sor — nincs `NG_VALUE_ACCESSOR`
- * provider, nincs `forwardRef`, nincs 4 kötelező metódus.
- *
- * Hasonlítsd össze a Reactive Forms tabban lévő `StarRatingCva`-val!
+ * Új elemek ehhez a commithoz:
+ *  - `FormRoot` direktíva: `[formRoot]` beállítja a `novalidate`-et és
+ *    elkapja a submit eseményt — nem kell `(submit)="onSubmit($event)"`.
+ *  - `submit()` függvény: érintetté tesz minden mezőt, validál, majd
+ *    lefuttatja az `action`-t. Közben `f().submitting()` true.
+ *  - Dinamikus tag-lista: nincs `FormArray.push()` — a modell signal
+ *    tömbjét frissítjük (`model.update(m => ...)`).
+ *  - Teljes `Registration` modell: ország, hírlevél, értékelés, tag-ek.
  */
 @Component({
   selector: 'app-signal-forms',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormField, StarRating],
+  imports: [FormField, FormRoot, StarRating, JsonPipe],
   templateUrl: './signal-forms.html',
   styleUrl: '../shared/form.scss',
 })
 export class SignalForms {
   private readonly usernames = inject(UsernameAvailabilityService);
 
-  protected readonly signupModel = signal<SignupData>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    username: '',
-    rating: 0,
-  });
+  protected readonly countries = COUNTRIES;
+  protected readonly submitted = signal<Registration | null>(null);
 
-  protected readonly f = form(this.signupModel, (path) => {
+  protected readonly model = signal<Registration>(emptyRegistration());
+
+  protected readonly f = form(this.model, (path) => {
+    required(path.fullName, { message: 'A név kötelező' });
+    minLength(path.fullName, 3, { message: 'Legalább 3 karakter' });
+
     required(path.email, { message: 'Az e-mail kötelező' });
     email(path.email, { message: 'Érvénytelen e-mail cím' });
 
@@ -71,17 +74,44 @@ export class SignalForms {
             params ? await this.usernames.isTaken(params) : false,
         }),
       onSuccess: (taken) =>
-        taken ? { kind: 'usernameTaken', message: 'Ez a felhasználónév foglalt' } : null,
-      onError: () => ({ kind: 'usernameCheckFailed', message: 'Az ellenőrzés nem sikerült' }),
+        taken
+          ? { kind: 'usernameTaken', message: 'Ez a felhasználónév foglalt' }
+          : null,
+      onError: () => ({
+        kind: 'usernameCheckFailed',
+        message: 'Az ellenőrzés nem sikerült',
+      }),
       debounce: 400,
     });
 
-    // Az egyedi control mezője ugyanúgy validálható, mint bármely más mező.
-    min(path.rating, 1, { message: 'Adj értékelést (1–5 csillag)' });
+    required(path.country, { message: 'Válassz országot' });
+
+    min(path.rating, 1, { message: 'Adj értékelést' });
+
+    minLength(path.tags, 1, { message: 'Adj meg legalább egy címkét' });
   });
 
-  protected onSubmit(event: Event): void {
-    event.preventDefault();
-    if (this.f().valid()) console.log('Regisztráció:', this.signupModel());
+  protected addTag(input: HTMLInputElement): void {
+    const value = input.value.trim();
+    if (value) {
+      this.model.update((m) => ({ ...m, tags: [...m.tags, value] }));
+      input.value = '';
+    }
+  }
+
+  protected removeTag(index: number): void {
+    this.model.update((m) => ({
+      ...m,
+      tags: m.tags.filter((_, i) => i !== index),
+    }));
+  }
+
+  protected async onSubmit(): Promise<void> {
+    await submit(this.f, {
+      action: async (field) => {
+        this.submitted.set(structuredClone(field().value()));
+      },
+      onInvalid: () => this.submitted.set(null),
+    });
   }
 }
