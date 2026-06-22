@@ -1,10 +1,9 @@
-<h2>Signal Forms – 3. lépés: cross-field és async validáció</h2>
+<h2>Signal Forms – 4. lépés: FormValueControl – signal-alapú custom control</h2>
 <p class="note">
-  <strong>Cross-field:</strong> a <code>validate()</code> callback <code>{ value, valueOf }</code>
-  kontextet kap — <code>valueOf(path.password)</code> reaktívan olvassa a másik mező értékét,
-  nincs szükség csoport-szintű validátorra.<br />
-  <strong>Async:</strong> <code>validateAsync()</code> + <code>resource</code> + beépített
-  <code>debounce: 400</code>. A <code>pending()</code> signal jelzi a futó kérést.
+  A <code>StarRating</code> komponens a <code>FormValueControl&lt;number&gt;</code> interface-t
+  valósítja meg. A teljes szerződés: <code>readonly value = model&lt;number&gt;(0)</code>.
+  Nincs <code>NG_VALUE_ACCESSOR</code> provider, nincs <code>forwardRef</code>, nincs
+  4 kötelező metódus. Hasonlítsd össze a Reactive tabban lévő <code>StarRatingCva</code>-val!
 </p>
 
 <form (submit)="onSubmit($event)">
@@ -53,6 +52,17 @@
       }
     }
     <span class="note">Foglalt nevek a demóban: admin, root, test, angular, demo</span>
+  </div>
+
+  <!-- FormValueControl: [formField] ugyanúgy működik, mint natív inputon -->
+  <div class="field">
+    <label>Értékelés</label>
+    <app-star-rating [formField]="f.rating" />
+    @if (f.rating().touched()) {
+      @for (e of f.rating().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
   </div>
 
   <button type="submit" class="primary" [disabled]="!f().valid()">Regisztráció</button>

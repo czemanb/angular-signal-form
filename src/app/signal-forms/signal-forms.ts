@@ -3,35 +3,36 @@ import {
   email,
   form,
   FormField,
+  min,
   minLength,
   required,
   validate,
   validateAsync,
 } from '@angular/forms/signals';
 import { UsernameAvailabilityService } from '../shared/username-availability.service';
+import { StarRating } from '../shared/star-rating-signal/star-rating';
 
 interface SignupData {
   email: string;
   password: string;
   confirmPassword: string;
   username: string;
+  rating: number;
 }
 
 /**
- * SIGNAL FORMS – 3. lépés: cross-field és async validáció.
+ * SIGNAL FORMS – 4. lépés: FormValueControl – signal-alapú custom control.
  *
- * Cross-field: a `validate()` callback `{ value, valueOf }` kontextet kap.
- * A `valueOf(path.password)` reaktívan olvassa a másik mezőt — újrafut,
- * ha bármelyik változik, anélkül hogy külön csoport-validátort kellene írni.
+ * A `StarRating` komponens a `FormValueControl<number>` interface-t valósítja meg.
+ * A teljes szerződés egyetlen `value = model<number>(0)` sor — nincs `NG_VALUE_ACCESSOR`
+ * provider, nincs `forwardRef`, nincs 4 kötelező metódus.
  *
- * Async: `validateAsync()` egy Angular `resource`-t kap. A `debounce: 400`
- * megakadályozza, hogy minden gombnyomásra HTTP-kérés menjen ki.
- * A `pending()` signal jelzi, amíg a kérés fut.
+ * Hasonlítsd össze a Reactive Forms tabban lévő `StarRatingCva`-val!
  */
 @Component({
   selector: 'app-signal-forms',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormField],
+  imports: [FormField, StarRating],
   templateUrl: './signal-forms.html',
   styleUrl: '../shared/form.scss',
 })
@@ -43,6 +44,7 @@ export class SignalForms {
     password: '',
     confirmPassword: '',
     username: '',
+    rating: 0,
   });
 
   protected readonly f = form(this.signupModel, (path) => {
@@ -53,7 +55,6 @@ export class SignalForms {
     minLength(path.password, 8, { message: 'Legalább 8 karakter' });
 
     required(path.confirmPassword, { message: 'Erősítsd meg a jelszót' });
-    // Cross-field: a valueOf(path.password) reaktívan olvassa a másik mezőt.
     validate(path.confirmPassword, ({ value, valueOf }) =>
       value() !== valueOf(path.password)
         ? { kind: 'passwordMismatch', message: 'A jelszavak nem egyeznek' }
@@ -74,6 +75,9 @@ export class SignalForms {
       onError: () => ({ kind: 'usernameCheckFailed', message: 'Az ellenőrzés nem sikerült' }),
       debounce: 400,
     });
+
+    // Az egyedi control mezője ugyanúgy validálható, mint bármely más mező.
+    min(path.rating, 1, { message: 'Adj értékelést (1–5 csillag)' });
   });
 
   protected onSubmit(event: Event): void {
