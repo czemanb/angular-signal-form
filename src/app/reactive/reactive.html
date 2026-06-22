@@ -1,0 +1,141 @@
+<h2>Reactive Forms</h2>
+<p class="note">
+  A klasszikus megoldás: explicit <code>FormGroup</code>/<code>FormControl</code>/<code>FormArray</code>,
+  validátor-tömbök, külön <code>AsyncValidatorFn</code>, és a régi
+  <code>ControlValueAccessor</code> alapú egyedi control.
+</p>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <!-- Név -->
+  <div class="field">
+    <label for="r-fullName">Teljes név</label>
+    <input id="r-fullName" type="text" formControlName="fullName"
+           [class.invalid]="form.controls.fullName.touched && form.controls.fullName.invalid" />
+    @if (form.controls.fullName.touched) {
+      @if (form.controls.fullName.hasError('required')) {
+        <span class="error">A név kötelező</span>
+      }
+      @if (form.controls.fullName.hasError('minlength')) {
+        <span class="error">Legalább 3 karakter</span>
+      }
+    }
+  </div>
+
+  <!-- E-mail -->
+  <div class="field">
+    <label for="r-email">E-mail</label>
+    <input id="r-email" type="email" formControlName="email"
+           [class.invalid]="form.controls.email.touched && form.controls.email.invalid" />
+    @if (form.controls.email.touched) {
+      @if (form.controls.email.hasError('required')) {
+        <span class="error">Az e-mail kötelező</span>
+      }
+      @if (form.controls.email.hasError('email')) {
+        <span class="error">Érvénytelen e-mail cím</span>
+      }
+    }
+  </div>
+
+  <!-- Jelszó -->
+  <div class="field">
+    <label for="r-password">Jelszó</label>
+    <input id="r-password" type="password" formControlName="password"
+           [class.invalid]="form.controls.password.touched && form.controls.password.invalid" />
+    @if (form.controls.password.touched) {
+      @if (form.controls.password.hasError('required')) {
+        <span class="error">A jelszó kötelező</span>
+      }
+      @if (form.controls.password.hasError('minlength')) {
+        <span class="error">Legalább 8 karakter</span>
+      }
+    }
+  </div>
+
+  <!-- Jelszó megerősítés (cross-field, a csoporton) -->
+  <div class="field">
+    <label for="r-confirmPassword">Jelszó megerősítése</label>
+    <input id="r-confirmPassword" type="password" formControlName="confirmPassword"
+           [class.invalid]="form.controls.confirmPassword.touched && form.hasError('passwordMismatch')" />
+    @if (form.controls.confirmPassword.touched && form.hasError('passwordMismatch')) {
+      <span class="error">A jelszavak nem egyeznek</span>
+    }
+  </div>
+
+  <!-- Felhasználónév (async) -->
+  <div class="field">
+    <label for="r-username">Felhasználónév</label>
+    <input id="r-username" type="text" formControlName="username"
+           [class.invalid]="form.controls.username.touched && form.controls.username.invalid" />
+    @if (form.controls.username.pending) {
+      <span class="pending">Elérhetőség ellenőrzése…</span>
+    } @else if (form.controls.username.touched) {
+      @if (form.controls.username.hasError('required')) {
+        <span class="error">A felhasználónév kötelező</span>
+      }
+      @if (form.controls.username.hasError('usernameTaken')) {
+        <span class="error">Ez a felhasználónév foglalt</span>
+      }
+    }
+    <span class="note">Foglalt nevek a demóban: admin, root, test, angular, demo</span>
+  </div>
+
+  <!-- Ország -->
+  <div class="field">
+    <label for="r-country">Ország</label>
+    <select id="r-country" formControlName="country"
+            [class.invalid]="form.controls.country.touched && form.controls.country.invalid">
+      <option value="">– válassz –</option>
+      @for (c of countries; track c) {
+        <option [value]="c">{{ c }}</option>
+      }
+    </select>
+    @if (form.controls.country.touched && form.controls.country.hasError('required')) {
+      <span class="error">Válassz országot</span>
+    }
+  </div>
+
+  <!-- Egyedi control: csillagos értékelés (CVA) -->
+  <div class="field">
+    <label>Értékelés</label>
+    <app-star-rating-cva formControlName="rating" />
+    @if (form.controls.rating.touched && form.controls.rating.hasError('min')) {
+      <span class="error">Adj értékelést</span>
+    }
+  </div>
+
+  <!-- Dinamikus címkék (FormArray) -->
+  <div class="field">
+    <label>Címkék</label>
+    <div class="tags">
+      @for (ctrl of tags.controls; track $index) {
+        <span class="tag">
+          {{ ctrl.value }}
+          <button type="button" (click)="removeTag($index)" aria-label="törlés">×</button>
+        </span>
+      }
+    </div>
+    <div class="tag-input">
+      <input #tagInput type="text" placeholder="Új címke…"
+             (keydown.enter)="$event.preventDefault(); addTag(tagInput)" />
+      <button type="button" class="secondary" (click)="addTag(tagInput)">Hozzáad</button>
+    </div>
+    @if (tags.touched && tags.invalid) {
+      <span class="error">Adj meg legalább egy címkét</span>
+    }
+  </div>
+
+  <!-- Hírlevél -->
+  <div class="checkbox-field">
+    <input id="r-newsletter" type="checkbox" formControlName="newsletter" />
+    <label for="r-newsletter">Kérek hírlevelet</label>
+  </div>
+
+  <button type="submit" class="primary">Regisztráció</button>
+</form>
+
+@if (submitted(); as data) {
+  <div class="result">
+    <strong>Sikeres beküldés! 🎉</strong>
+    <pre>{{ data | json }}</pre>
+  </div>
+}
