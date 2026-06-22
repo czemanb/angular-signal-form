@@ -1,16 +1,77 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { JsonPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
+import {
+  COUNTRIES,
+  emptyRegistration,
+  Registration,
+} from '../shared/registration.model';
+import { UsernameAvailabilityService } from '../shared/username-availability.service';
 
+/**
+ * TEMPLATE-DRIVEN megoldás – a legkevesebb TS, a legtöbb a sablonban.
+ *
+ * Tanulságok az összehasonlításhoz:
+ *  - a logika a sablonban él (`[(ngModel)]`, `#ref="ngModel"`, attribútum-validátorok),
+ *  - a cross-field (jelszó-egyezés) csak sablon-összehasonlítással kényelmes,
+ *  - az ASYNC validáció a gyenge pont: saját direktíva kellene hozzá; itt
+ *    egyszerű blur-időzített ellenőrzéssel pótoljuk (lásd a comparison oldalt),
+ *  - nincs erős típusosság a form-állapotra.
+ */
 @Component({
   selector: 'app-template-driven',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2>Template-driven Forms</h2>
-    <p class="note">Következő commit… (a form itt fog megjelenni)</p>
-  `,
-  styles: [
-    `:host { display: block; }
-    .note { font-size: 0.85rem; color: #64748b; background: #f8fafc;
-      border-left: 3px solid #94a3b8; padding: 0.5rem 0.75rem; border-radius: 0 6px 6px 0; }`,
-  ],
+  imports: [FormsModule, JsonPipe],
+  templateUrl: './template-driven.html',
+  styleUrl: '../shared/form.scss',
 })
-export class TemplateDriven {}
+export class TemplateDriven {
+  private readonly usernames = inject(UsernameAvailabilityService);
+
+  protected readonly countries = COUNTRIES;
+  protected readonly model: Registration = emptyRegistration();
+  protected readonly submitted = signal<Registration | null>(null);
+
+  // Az async ellenőrzés állapotát kézzel kell követni (nincs beépített async validátor).
+  protected readonly usernameChecking = signal(false);
+  protected readonly usernameTaken = signal(false);
+  protected newTag = '';
+
+  protected async checkUsername(): Promise<void> {
+    const value = this.model.username.trim();
+    if (!value) {
+      this.usernameTaken.set(false);
+      return;
+    }
+    this.usernameChecking.set(true);
+    this.usernameTaken.set(await this.usernames.isTaken(value));
+    this.usernameChecking.set(false);
+  }
+
+  protected addTag(): void {
+    const value = this.newTag.trim();
+    if (value) {
+      this.model.tags.push(value);
+      this.newTag = '';
+    }
+  }
+
+  protected removeTag(index: number): void {
+    this.model.tags.splice(index, 1);
+  }
+
+  protected onSubmit(form: NgForm): void {
+    const valid =
+      form.valid &&
+      this.model.password === this.model.confirmPassword &&
+      this.model.rating >= 1 &&
+      this.model.tags.length >= 1 &&
+      !this.usernameTaken();
+    if (!valid) {
+      Object.values(form.controls).forEach((c) => c.markAsTouched());
+      this.submitted.set(null);
+      return;
+    }
+    this.submitted.set(structuredClone(this.model));
+  }
+}

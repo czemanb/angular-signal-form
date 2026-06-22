@@ -1,0 +1,133 @@
+<h2>Template-driven Forms</h2>
+<p class="note">
+  A legkevesebb TypeScript: a form a sablonban él <code>[(ngModel)]</code>-lel és
+  attribútum-validátorokkal. A cross-field és főleg az async validáció itt a
+  legnehézkesebb (saját direktívát igényelne).
+</p>
+
+<form #f="ngForm" (ngSubmit)="onSubmit(f)">
+  <!-- Név -->
+  <div class="field">
+    <label for="t-fullName">Teljes név</label>
+    <input id="t-fullName" type="text" name="fullName" #fullName="ngModel"
+           [(ngModel)]="model.fullName" required minlength="3"
+           [class.invalid]="fullName.touched && fullName.invalid" />
+    @if (fullName.touched) {
+      @if (fullName.hasError('required')) { <span class="error">A név kötelező</span> }
+      @if (fullName.hasError('minlength')) { <span class="error">Legalább 3 karakter</span> }
+    }
+  </div>
+
+  <!-- E-mail -->
+  <div class="field">
+    <label for="t-email">E-mail</label>
+    <input id="t-email" type="email" name="email" #email="ngModel"
+           [(ngModel)]="model.email" required email
+           [class.invalid]="email.touched && email.invalid" />
+    @if (email.touched) {
+      @if (email.hasError('required')) { <span class="error">Az e-mail kötelező</span> }
+      @if (email.hasError('email')) { <span class="error">Érvénytelen e-mail cím</span> }
+    }
+  </div>
+
+  <!-- Jelszó -->
+  <div class="field">
+    <label for="t-password">Jelszó</label>
+    <input id="t-password" type="password" name="password" #password="ngModel"
+           [(ngModel)]="model.password" required minlength="8"
+           [class.invalid]="password.touched && password.invalid" />
+    @if (password.touched) {
+      @if (password.hasError('required')) { <span class="error">A jelszó kötelező</span> }
+      @if (password.hasError('minlength')) { <span class="error">Legalább 8 karakter</span> }
+    }
+  </div>
+
+  <!-- Jelszó megerősítés (cross-field sablon-összehasonlítással) -->
+  <div class="field">
+    <label for="t-confirmPassword">Jelszó megerősítése</label>
+    <input id="t-confirmPassword" type="password" name="confirmPassword" #confirmPassword="ngModel"
+           [(ngModel)]="model.confirmPassword" required
+           [class.invalid]="confirmPassword.touched && model.password !== model.confirmPassword" />
+    @if (confirmPassword.touched && model.password !== model.confirmPassword) {
+      <span class="error">A jelszavak nem egyeznek</span>
+    }
+  </div>
+
+  <!-- Felhasználónév (kézi async) -->
+  <div class="field">
+    <label for="t-username">Felhasználónév</label>
+    <input id="t-username" type="text" name="username" #username="ngModel"
+           [(ngModel)]="model.username" required (blur)="checkUsername()"
+           [class.invalid]="(username.touched && username.invalid) || usernameTaken()" />
+    @if (usernameChecking()) {
+      <span class="pending">Elérhetőség ellenőrzése…</span>
+    } @else {
+      @if (username.touched && username.hasError('required')) {
+        <span class="error">A felhasználónév kötelező</span>
+      }
+      @if (usernameTaken()) { <span class="error">Ez a felhasználónév foglalt</span> }
+    }
+    <span class="note">Foglalt nevek a demóban: admin, root, test, angular, demo</span>
+  </div>
+
+  <!-- Ország -->
+  <div class="field">
+    <label for="t-country">Ország</label>
+    <select id="t-country" name="country" #country="ngModel"
+            [(ngModel)]="model.country" required
+            [class.invalid]="country.touched && country.invalid">
+      <option value="">– válassz –</option>
+      @for (c of countries; track c) {
+        <option [value]="c">{{ c }}</option>
+      }
+    </select>
+    @if (country.touched && country.hasError('required')) {
+      <span class="error">Válassz országot</span>
+    }
+  </div>
+
+  <!-- Egyedi control: csillagok itt egyszerű gombokkal (TD nem ideális CVA-hoz) -->
+  <div class="field">
+    <label>Értékelés</label>
+    <div class="stars-inline">
+      @for (star of [1, 2, 3, 4, 5]; track star) {
+        <button type="button" class="star" [class.filled]="star <= model.rating"
+                (click)="model.rating = star">★</button>
+      }
+    </div>
+    <input type="hidden" name="rating" [(ngModel)]="model.rating" />
+  </div>
+
+  <!-- Dinamikus címkék -->
+  <div class="field">
+    <label>Címkék</label>
+    <div class="tags">
+      @for (tag of model.tags; track $index) {
+        <span class="tag">
+          {{ tag }}
+          <button type="button" (click)="removeTag($index)" aria-label="törlés">×</button>
+        </span>
+      }
+    </div>
+    <div class="tag-input">
+      <input type="text" name="newTag" [(ngModel)]="newTag" placeholder="Új címke…"
+             (keydown.enter)="$event.preventDefault(); addTag()" />
+      <button type="button" class="secondary" (click)="addTag()">Hozzáad</button>
+    </div>
+  </div>
+
+  <!-- Hírlevél -->
+  <div class="checkbox-field">
+    <input id="t-newsletter" type="checkbox" name="newsletter" [(ngModel)]="model.newsletter" />
+    <label for="t-newsletter">Kérek hírlevelet</label>
+  </div>
+
+  <button type="submit" class="primary">Regisztráció</button>
+</form>
+
+@if (submitted(); as data) {
+  <div class="result">
+    <strong>Sikeres beküldés! 🎉</strong>
+    <pre>{{ data | json }}</pre>
+  </div>
+}
