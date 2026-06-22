@@ -1,26 +1,33 @@
-<h2>Signal Forms – 1. lépés: signal() + form() + [formField]</h2>
+<h2>Signal Forms – 2. lépés: beépített validátorok és hibaüzenetek</h2>
 <p class="note">
-  A forrás egyetlen <code>signal&lt;LoginData&gt;()</code>. A <code>form()</code> ebből
-  épít egy <strong>FieldTree</strong>-t: <code>f.email</code> és <code>f.password</code>
-  automatikusan létrejönnek a modell típusa alapján. A <code>[formField]</code> direktíva
-  köti az inputot. Nincs validáció még — csak a kötés és a reaktív értékolvasás.
+  A <code>form()</code> második argumentuma a <strong>schema-függvény</strong>.
+  Deklaratív validátorok — <code>required</code>, <code>email</code>, <code>minLength</code>.
+  A hibák <code>field().errors()</code> signalból jönnek; csak <code>touched()</code>
+  után mutatjuk őket. Egy mezőn <strong>több hiba is létezhet egyszerre</strong>.
 </p>
 
-<form>
+<form (submit)="onSubmit($event)">
   <div class="field">
     <label for="email">E-mail</label>
-    <input id="email" type="email" [formField]="f.email" />
-    <small>Élő érték: <strong>{{ f.email().value() }}</strong></small>
+    <input id="email" type="email" [formField]="f.email"
+           [class.invalid]="f.email().touched() && f.email().invalid()" />
+    @if (f.email().touched()) {
+      @for (e of f.email().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
   </div>
 
   <div class="field">
     <label for="password">Jelszó</label>
-    <input id="password" type="password" [formField]="f.password" />
-    <small>Hossz: <strong>{{ f.password().value().length }}</strong> karakter</small>
+    <input id="password" type="password" [formField]="f.password"
+           [class.invalid]="f.password().touched() && f.password().invalid()" />
+    @if (f.password().touched()) {
+      @for (e of f.password().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
   </div>
-</form>
 
-<div class="result">
-  <strong>loginModel() — a signal forrás, szinkronban marad az inputokkal:</strong>
-  <pre>{{ loginModel() | json }}</pre>
-</div>
+  <button type="submit" class="primary" [disabled]="!f().valid()">Bejelentkezés</button>
+</form>
