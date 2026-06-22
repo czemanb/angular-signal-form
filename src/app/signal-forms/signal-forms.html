@@ -1,9 +1,10 @@
-<h2>Signal Forms – 2. lépés: beépített validátorok és hibaüzenetek</h2>
+<h2>Signal Forms – 3. lépés: cross-field és async validáció</h2>
 <p class="note">
-  A <code>form()</code> második argumentuma a <strong>schema-függvény</strong>.
-  Deklaratív validátorok — <code>required</code>, <code>email</code>, <code>minLength</code>.
-  A hibák <code>field().errors()</code> signalból jönnek; csak <code>touched()</code>
-  után mutatjuk őket. Egy mezőn <strong>több hiba is létezhet egyszerre</strong>.
+  <strong>Cross-field:</strong> a <code>validate()</code> callback <code>{ value, valueOf }</code>
+  kontextet kap — <code>valueOf(path.password)</code> reaktívan olvassa a másik mező értékét,
+  nincs szükség csoport-szintű validátorra.<br />
+  <strong>Async:</strong> <code>validateAsync()</code> + <code>resource</code> + beépített
+  <code>debounce: 400</code>. A <code>pending()</code> signal jelzi a futó kérést.
 </p>
 
 <form (submit)="onSubmit($event)">
@@ -29,5 +30,30 @@
     }
   </div>
 
-  <button type="submit" class="primary" [disabled]="!f().valid()">Bejelentkezés</button>
+  <div class="field">
+    <label for="confirmPassword">Jelszó megerősítése</label>
+    <input id="confirmPassword" type="password" [formField]="f.confirmPassword"
+           [class.invalid]="f.confirmPassword().touched() && f.confirmPassword().invalid()" />
+    @if (f.confirmPassword().touched()) {
+      @for (e of f.confirmPassword().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+  </div>
+
+  <div class="field">
+    <label for="username">Felhasználónév</label>
+    <input id="username" type="text" [formField]="f.username"
+           [class.invalid]="f.username().touched() && f.username().invalid()" />
+    @if (f.username().pending()) {
+      <span class="pending">Elérhetőség ellenőrzése…</span>
+    } @else if (f.username().touched()) {
+      @for (e of f.username().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+    <span class="note">Foglalt nevek a demóban: admin, root, test, angular, demo</span>
+  </div>
+
+  <button type="submit" class="primary" [disabled]="!f().valid()">Regisztráció</button>
 </form>
