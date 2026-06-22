@@ -1,16 +1,31 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { JsonPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { form, FormField } from '@angular/forms/signals';
 
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+/**
+ * SIGNAL FORMS – 1. lépés: az alap.
+ *
+ * Három fogalom:
+ *  1. `signal<LoginData>(...)` — ez a forrás; minden ebből jön.
+ *  2. `form(model)` — FieldTree-t épít a modell alakja szerint.
+ *  3. `[formField]` — köti az inputot a FieldTree csomópontjához.
+ *
+ * Még nincs validáció — csak a kötés és a reaktív értékolvasás.
+ * Gépelj bele az e-mail mezőbe: a modell élőben frissül.
+ */
 @Component({
   selector: 'app-signal-forms',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2>Signal Forms</h2>
-    <p class="note">Következő commit… (a Signal Forms demó itt fog megjelenni)</p>
-  `,
-  styles: [
-    `:host { display: block; }
-    .note { font-size: 0.85rem; color: #64748b; background: #f8fafc;
-      border-left: 3px solid #94a3b8; padding: 0.5rem 0.75rem; border-radius: 0 6px 6px 0; }`,
-  ],
+  imports: [FormField, JsonPipe],
+  templateUrl: './signal-forms.html',
+  styleUrl: '../shared/form.scss',
 })
-export class SignalForms {}
+export class SignalForms {
+  protected readonly loginModel = signal<LoginData>({ email: '', password: '' });
+  protected readonly f = form(this.loginModel);
+}

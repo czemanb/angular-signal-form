@@ -1,0 +1,26 @@
+<h2>Signal Forms – 1. lépés: signal() + form() + [formField]</h2>
+<p class="note">
+  A forrás egyetlen <code>signal&lt;LoginData&gt;()</code>. A <code>form()</code> ebből
+  épít egy <strong>FieldTree</strong>-t: <code>f.email</code> és <code>f.password</code>
+  automatikusan létrejönnek a modell típusa alapján. A <code>[formField]</code> direktíva
+  köti az inputot. Nincs validáció még — csak a kötés és a reaktív értékolvasás.
+</p>
+
+<form>
+  <div class="field">
+    <label for="email">E-mail</label>
+    <input id="email" type="email" [formField]="f.email" />
+    <small>Élő érték: <strong>{{ f.email().value() }}</strong></small>
+  </div>
+
+  <div class="field">
+    <label for="password">Jelszó</label>
+    <input id="password" type="password" [formField]="f.password" />
+    <small>Hossz: <strong>{{ f.password().value().length }}</strong> karakter</small>
+  </div>
+</form>
+
+<div class="result">
+  <strong>loginModel() — a signal forrás, szinkronban marad az inputokkal:</strong>
+  <pre>{{ loginModel() | json }}</pre>
+</div>
