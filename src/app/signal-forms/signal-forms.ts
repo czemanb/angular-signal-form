@@ -1,6 +1,7 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import {
+  debounce,
   email,
   form,
   FormField,
@@ -47,49 +48,59 @@ export class SignalForms {
 
   protected readonly model = signal<Registration>(emptyRegistration());
 
-  protected readonly f = form(this.model, (path) => {
-    required(path.fullName, { message: 'A név kötelező' });
-    minLength(path.fullName, 3, { message: 'Legalább 3 karakter' });
+  protected readonly f = form(
+    this.model,
+    (path) => {
+      required(path.fullName, { message: 'A név kötelező' });
+      minLength(path.fullName, 3, { message: 'Legalább 3 karakter' });
 
-    required(path.email, { message: 'Az e-mail kötelező' });
-    email(path.email, { message: 'Érvénytelen e-mail cím' });
+      required(path.email, { message: 'Az e-mail kötelező' });
+      email(path.email, { message: 'Érvénytelen e-mail cím' });
 
-    required(path.password, { message: 'A jelszó kötelező' });
-    minLength(path.password, 8, { message: 'Legalább 8 karakter' });
+      required(path.password, { message: 'A jelszó kötelező' });
+      minLength(path.password, 8, { message: 'Legalább 8 karakter' });
 
-    required(path.confirmPassword, { message: 'Erősítsd meg a jelszót' });
-    validate(path.confirmPassword, ({ value, valueOf }) =>
-      value() !== valueOf(path.password)
-        ? { kind: 'passwordMismatch', message: 'A jelszavak nem egyeznek' }
-        : null,
-    );
-
-    required(path.username, { message: 'A felhasználónév kötelező' });
-    validateAsync(path.username, {
-      params: ({ value }) => value().trim().toLowerCase() || undefined,
-      factory: (name) =>
-        resource({
-          params: () => name(),
-          loader: async ({ params }) =>
-            params ? await this.usernames.isTaken(params) : false,
-        }),
-      onSuccess: (taken) =>
-        taken
-          ? { kind: 'usernameTaken', message: 'Ez a felhasználónév foglalt' }
+      required(path.confirmPassword, { message: 'Erősítsd meg a jelszót' });
+      validate(path.confirmPassword, ({ value, valueOf }) =>
+        value() !== valueOf(path.password)
+          ? { kind: 'passwordMismatch', message: 'A jelszavak nem egyeznek' }
           : null,
-      onError: () => ({
-        kind: 'usernameCheckFailed',
-        message: 'Az ellenőrzés nem sikerült',
-      }),
-      debounce: 400,
-    });
+      );
+      required(path.username, { message: 'A felhasználónév kötelező' });
+      validateAsync(path.username, {
+        params: ({ value }) => value().trim().toLowerCase() || undefined,
+        factory: (name) =>
+          resource({
+            params: () => name(),
+            loader: async ({ params }) => (params ? await this.usernames.isTaken(params) : false),
+          }),
+        onSuccess: (taken) =>
+          taken ? { kind: 'usernameTaken', message: 'Ez a felhasználónév foglalt' } : null,
+        onError: () => ({
+          kind: 'usernameCheckFailed',
+          message: 'Az ellenőrzés nem sikerült',
+        }),
+        debounce: 400,
+      });
+      required(path.country, { message: 'Válassz országot' });
 
-    required(path.country, { message: 'Válassz országot' });
+      min(path.rating, 1, { message: 'Adj értékelést' });
 
-    min(path.rating, 1, { message: 'Adj értékelést' });
-
-    minLength(path.tags, 1, { message: 'Adj meg legalább egy címkét' });
-  });
+      minLength(path.tags, 1, { message: 'Adj meg legalább egy címkét' });
+    },
+    {
+      submission: {
+        //ignoreValidators: 'none',
+        action: async (form) => {
+          this.submitted.set(structuredClone(form().value()));
+        },
+        onInvalid: (field, detail) => {
+          const first = detail.root().errorSummary()?.[0];
+          first?.fieldTree()?.focusBoundControl?.();
+        },
+      },
+    }
+  );
 
   protected addTag(input: HTMLInputElement): void {
     const value = input.value.trim();
@@ -104,14 +115,5 @@ export class SignalForms {
       ...m,
       tags: m.tags.filter((_, i) => i !== index),
     }));
-  }
-
-  protected async onSubmit(): Promise<void> {
-    await submit(this.f, {
-      action: async (field) => {
-        this.submitted.set(structuredClone(field().value()));
-      },
-      onInvalid: () => this.submitted.set(null),
-    });
   }
 }
