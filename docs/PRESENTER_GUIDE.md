@@ -23,7 +23,7 @@ git log --oneline --reverse
 
 ---
 
-## A 10 commit és mit mondj hozzájuk
+## A commitok és mit mondj hozzájuk
 
 ### 1. commit – App shell, navigáció, placeholder oldalak
 
@@ -302,6 +302,70 @@ Mutasd a CVA vs FormValueControl kódrészleteket.
 
 ---
 
+### 11. commit – FormRoot auto-submit refaktor (opcionális kitérő)
+
+```bash
+git checkout HEAD~2   # refactor(signal/5) commit
+```
+
+**Mit mutass:** Nyisd meg a `signal-forms.ts`-t. Mutasd meg a `form()` harmadik
+argumentumát és a `submission` opciót.
+
+**Mit mondj:**
+
+> „Egy gyors kitérő a beküldési flow finomhangolásáról. Az előző commitban
+> a `submit()` függvényt kézzel hívtuk egy `onSubmit()` metódusból. Az Angular
+> 22 ajánlott módja másképp néz ki: a beküldési logikát a `form()` harmadik
+> argumentumának `submission` opciójába tesszük. Az `action` az, ami érvényes
+> form esetén fut le. Az `onInvalid` akkor hívódik, ha a validáció megbukott —
+> itt a `focusBoundControl()` hívással a fókusz automatikusan az első hibás
+> mezőre ugrik."
+
+> „Ezzel a `[formRoot]` direktíva már mindent kezel magától: elkapja a submit
+> eseményt, érintetté tesz minden mezőt, és lefuttatja a megfelelő callback-et.
+> A sablonban nem kell `(submit)=\"onSubmit()\"` — ez a Zero-boilerplate submit
+> flow."
+
+---
+
+### 12. commit – Migráció: compatForm (top-down) és SignalFormControl (bottom-up)
+
+```bash
+git checkout HEAD   # a branch teteje
+```
+
+**Mit mutass:** Kattints a „Migráció" tabra. Próbáld ki mindkét formot. Töltsd
+ki jól a felső (compatForm) formot, majd a más stílusú alsót (SignalFormControl)
+is. Mutasd az IDE-ben egymás mellett a két TypeScript blokkot a `migration.ts`-ben.
+
+**Mit mondj:**
+
+> „A nagy kérdés mindig az, hogy hogyan állunk át fokozatosan, ha van 50
+> meglévő Reactive Forms formunk. Az Angular 22 két konkrét eszközt ad erre."
+
+> „Az első stratégia a top-down: a Signal Form a tetőn, de egyes részfák
+> maradhatnak régi FormControl-ok. Ehhez a `compatForm` függvényt használjuk
+> a `@angular/forms/signals/compat` csomagból. A modell signal tartalmazza
+> a meglévő `FormControl` példányt — a `compatForm` áthidalja. Figyeld meg
+> a sablont: mindkét mező `[formField]`-del van kötve. A `topDownForm.password().errors()`
+> signal mögött valójában a `FormControl.errors` van proxy-zva. A végén az
+> `extractValue()` utility kibontja a raw értékeket."
+
+> „A második stratégia a bottom-up: a meglévő `FormGroup` marad, de egyes
+> levél-mezőket `SignalFormControl`-ra cserélünk. A `SignalFormControl` extends
+> `AbstractControl`, tehát a `FormGroup` nem tud róla, hogy az nem hagyományos
+> `FormControl`. A `form.valid`, a `markAllAsTouched()` mind változatlan.
+> A sablonban az email mezőhöz `[formField]=\"emailCtrl.fieldTree\"`-t használunk —
+> ez adja a signal kötést. A jelszó mező marad `formControlName`-mel."
+
+> „Melyiket mikor? Ha egy nagy, komplex formot akarsz átírni felülről lefelé,
+> válaszd a `compatForm`-ot — a legkényesebb részfák maradhatnak régi módra.
+> Ha egy meglévő `FormGroup`-hierarchiában csak néhány leaf-mezőt akarsz
+> signal-alapúra cserélni, válaszd a `SignalFormControl`-t. A kettő
+> kombinálható is."
+
+---
+
 ## Zárszó (Q&A előtt)
 
 > „Összefoglalva: a Signal Forms nem a régi formok cseréje, hanem egy új
@@ -353,3 +417,6 @@ git checkout -- .
 | 8 | `feat(signal/4)` | FormValueControl |
 | 9 | `feat(signal/5)` | Teljes form, [formRoot], submit |
 | 10 | `feat(comparison)` | Összehasonlítás táblázat |
+| 11 | `docs` | Előadói útmutató |
+| 12 | `refactor(signal/5)` | FormRoot auto-submit, focusBoundControl |
+| 13 | `feat(migration)` | compatForm (top-down) + SignalFormControl (bottom-up) |

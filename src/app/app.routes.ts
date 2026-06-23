@@ -25,5 +25,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./comparison/comparison').then((m) => m.Comparison),
   },
+  {
+    path: 'migration',
+    title: 'Migráció',
+    loadComponent: () =>
+      import('./migration/migration').then((m) => m.Migration),
+  },
   { path: '**', redirectTo: 'signal' },
 ];
