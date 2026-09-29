@@ -5,7 +5,7 @@
   <code>ControlValueAccessor</code> alapú egyedi control.
 </p>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
+<form [formGroup]="form" (ngSubmit)="onSubmit($event)" novalidate>
   <!-- Név -->
   <div class="field">
     <label for="r-fullName">Teljes név</label>

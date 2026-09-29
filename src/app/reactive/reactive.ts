@@ -100,6 +100,10 @@ export class Reactive {
     { validators: [passwordsMatch] },
   );
 
+  constructor() {
+    this.form.valueChanges.subscribe((v) => localStorage.setItem('registration-draft', JSON.stringify(v)));
+  }
+
   protected get tags(): FormArray<FormControl<string>> {
     return this.form.controls.tags;
   }
@@ -116,7 +120,8 @@ export class Reactive {
     this.tags.removeAt(index);
   }
 
-  protected onSubmit(): void {
+  protected onSubmit(event: any): void {
+    event.preventDefault()
     if (this.form.invalid || this.form.pending) {
       this.form.markAllAsTouched();
       this.submitted.set(null);

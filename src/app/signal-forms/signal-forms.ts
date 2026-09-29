@@ -1,5 +1,6 @@
 import { JsonPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, resource, signal } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import {
   debounce,
   email,
@@ -42,11 +43,16 @@ import { StarRating } from '../shared/star-rating-signal/star-rating';
 })
 export class SignalForms {
   private readonly usernames = inject(UsernameAvailabilityService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   protected readonly countries = COUNTRIES;
   protected readonly submitted = signal<Registration | null>(null);
 
   protected readonly model = signal<Registration>(emptyRegistration());
+
+  protected readonly greeting = computed(() =>
+    this.sanitizer.bypassSecurityTrustHtml(`<b>Üdv, ${this.submitted()?.fullName}!</b>`),
+  );
 
   protected readonly f = form(
     this.model,
@@ -90,8 +96,8 @@ export class SignalForms {
     },
     {
       submission: {
-        //ignoreValidators: 'none',
         action: async (form) => {
+          console.log('Regisztráció beküldve', form().value());
           this.submitted.set(structuredClone(form().value()));
         },
         onInvalid: (field, detail) => {
@@ -113,7 +119,7 @@ export class SignalForms {
   protected removeTag(index: number): void {
     this.model.update((m) => ({
       ...m,
-      tags: m.tags.filter((_, i) => i !== index),
+      tags: m.tags.filter((_, i) => i === index),
     }));
   }
 }

@@ -184,4 +184,3 @@ A `f().submitting()` signal jelzi a folyamatban lévő beküldést.
 - [Signal Forms in Angular 21 — Complete Guide (Angular.love)](https://angular.love/signal-forms-in-angular-21-complete-guide)
 - [FormValueControl Deep Dive (Netanel Basal)](https://medium.com/netanelbasal/formvaluecontrol-deep-dive-into-angular-signal-forms-custom-controls-af68ce33df37)
 - [Mastering Angular 21 Signal Forms (Código Tipado)](https://www.codigotipado.com/p/mastering-angular-21-signal-forms)
-- Helyi forrás: `node_modules/@angular/forms/types/signals.d.ts` (v22.0.1)

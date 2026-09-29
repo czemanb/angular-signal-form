@@ -6,7 +6,6 @@
 </p>
 
 <form [formRoot]="f">
-  <!-- Név -->
   <div class="field">
     <label for="fullName">Teljes név</label>
     <input id="fullName" type="text" [formField]="f.fullName"
@@ -18,7 +17,6 @@
     }
   </div>
 
-  <!-- E-mail -->
   <div class="field">
     <label for="email">E-mail</label>
     <input id="email" type="email" [formField]="f.email"
@@ -30,7 +28,6 @@
     }
   </div>
 
-  <!-- Jelszó -->
   <div class="field">
     <label for="password">Jelszó</label>
     <input id="password" type="password" [formField]="f.password"
@@ -42,7 +39,6 @@
     }
   </div>
 
-  <!-- Jelszó megerősítés (cross-field) -->
   <div class="field">
     <label for="confirmPassword">Jelszó megerősítése</label>
     <input id="confirmPassword" type="password" [formField]="f.confirmPassword"
@@ -54,7 +50,6 @@
     }
   </div>
 
-  <!-- Felhasználónév (async) -->
   <div class="field">
     <label for="username">Felhasználónév</label>
     <input id="username" type="text" [formField]="f.username"
@@ -86,7 +81,6 @@
     }
   </div>
 
-  <!-- Egyedi control: csillagos értékelés (FormValueControl) -->
   <div class="field">
     <label>Értékelés</label>
     <app-star-rating [formField]="f.rating" />
@@ -97,7 +91,6 @@
     }
   </div>
 
-  <!-- Dinamikus címkék – modell signal frissítése, nem FormArray.push() -->
   <div class="field">
     <label>Címkék</label>
     <div class="tags">
@@ -113,12 +106,13 @@
              (keydown.enter)="$event.preventDefault(); addTag(tagInput)" />
       <button type="button" class="secondary" (click)="addTag(tagInput)">Hozzáad</button>
     </div>
-    @for (e of f.tags().errors(); track e.kind) {
-      <span class="error">{{ e.message }}</span>
+    @if (f.tags().touched()) {
+      @for (e of f.tags().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
     }
   </div>
 
-  <!-- Hírlevél (checkbox) -->
   <div class="checkbox-field">
     <input id="newsletter" type="checkbox" [formField]="f.newsletter" />
     <label for="newsletter">Kérek hírlevelet</label>
@@ -132,6 +126,7 @@
 @if (submitted(); as data) {
   <div class="result">
     <strong>Sikeres beküldés! 🎉</strong>
+    <p [innerHTML]="greeting()"></p>
     <pre>{{ data | json }}</pre>
   </div>
 }

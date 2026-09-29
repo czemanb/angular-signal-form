@@ -11,9 +11,7 @@ export interface Registration {
   username: string;
   country: string;
   newsletter: boolean;
-  /** Egyedi control (csillagos értékelés) értéke: 0–5. */
   rating: number;
-  /** Dinamikus lista – a FormArray / FieldArray ekvivalens bemutatásához. */
   tags: string[];
 }
 
@@ -25,7 +23,6 @@ export const COUNTRIES = [
   'Egyéb',
 ] as const;
 
-/** Üres kezdőállapot egy új regisztrációhoz. */
 export function emptyRegistration(): Registration {
   return {
     fullName: '',
@@ -40,5 +37,4 @@ export function emptyRegistration(): Registration {
   };
 }
 
-/** Az async validáció demójához: ezek a felhasználónevek "foglaltak". */
 export const TAKEN_USERNAMES = ['admin', 'root', 'test', 'angular', 'demo'];

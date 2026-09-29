@@ -75,14 +75,14 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
   `,
 })
 export class StarRatingCva implements ControlValueAccessor {
-  protected readonly stars = [1, 2, 3, 4, 5];
-  protected readonly rating = signal(0);
-  protected readonly isDisabled = signal(false);
+  readonly stars = [1, 2, 3, 4, 5];
+  readonly rating = signal(0);
+  readonly isDisabled = signal(false);
 
   private onChange: (value: number) => void = () => {};
   private onTouched: () => void = () => {};
 
-  protected select(value: number): void {
+  select(value: number): void {
     if (this.isDisabled()) {
       return;
     }
@@ -91,7 +91,6 @@ export class StarRatingCva implements ControlValueAccessor {
     this.onTouched();
   }
 
-  // --- ControlValueAccessor: a kötelező 4 metódus ---
   writeValue(value: number): void {
     this.rating.set(value ?? 0);
   }

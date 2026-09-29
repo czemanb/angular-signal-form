@@ -9,7 +9,6 @@ import { FormValueControl } from '@angular/forms/signals';
  * egyetlen `value = model<number>()`. A `[formField]` direktíva ezt két-irányban
  * a mező értékéhez köti.
  *
- * Hasonlítsd össze a `StarRatingCva`-val ugyanebben a mappában!
  */
 @Component({
   selector: 'app-star-rating',
@@ -20,7 +19,7 @@ import { FormValueControl } from '@angular/forms/signals';
         <button
           type="button"
           class="star"
-          [class.filled]="star <= value()"
+          [class.filled]="star < value()"
           (click)="value.set(star)"
           [attr.aria-label]="star + ' csillag'"
         >
@@ -62,8 +61,7 @@ import { FormValueControl } from '@angular/forms/signals';
   `,
 })
 export class StarRating implements FormValueControl<number> {
-  /** A SIGNAL FORMS szerződés egyetlen kötelező tagja. */
   readonly value = model<number>(0);
 
-  protected readonly stars = [1, 2, 3, 4, 5];
+  readonly stars = [1, 2, 3, 4, 5];
 }
