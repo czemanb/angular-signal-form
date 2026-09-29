@@ -1,0 +1,137 @@
+<h2>Signal Forms</h2>
+<p class="note">
+  Egyetlen <code>signal</code> modell + <code>form()</code>. A validáció deklaratív a
+  schema-függvényben, az állapot pedig végig signal — nincs <code>FormGroup</code>,
+  nincs <code>Validators</code> tömb, nincs kézi feliratkozás.
+</p>
+
+<form [formRoot]="f">
+  <!-- Név -->
+  <div class="field">
+    <label for="fullName">Teljes név</label>
+    <input id="fullName" type="text" [formField]="f.fullName"
+           [class.invalid]="f.fullName().touched() && f.fullName().invalid()" />
+    @if (f.fullName().touched()) {
+      @for (e of f.fullName().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+  </div>
+
+  <!-- E-mail -->
+  <div class="field">
+    <label for="email">E-mail</label>
+    <input id="email" type="email" [formField]="f.email"
+           [class.invalid]="f.email().touched() && f.email().invalid()" />
+    @if (f.email().touched()) {
+      @for (e of f.email().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+  </div>
+
+  <!-- Jelszó -->
+  <div class="field">
+    <label for="password">Jelszó</label>
+    <input id="password" type="password" [formField]="f.password"
+           [class.invalid]="f.password().touched() && f.password().invalid()" />
+    @if (f.password().touched()) {
+      @for (e of f.password().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+  </div>
+
+  <!-- Jelszó megerősítés (cross-field) -->
+  <div class="field">
+    <label for="confirmPassword">Jelszó megerősítése</label>
+    <input id="confirmPassword" type="password" [formField]="f.confirmPassword"
+           [class.invalid]="f.confirmPassword().touched() && f.confirmPassword().invalid()" />
+    @if (f.confirmPassword().touched()) {
+      @for (e of f.confirmPassword().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+  </div>
+
+  <!-- Felhasználónév (async) -->
+  <div class="field">
+    <label for="username">Felhasználónév</label>
+    <input id="username" type="text" [formField]="f.username"
+           [class.invalid]="f.username().touched() && f.username().invalid()" />
+    @if (f.username().pending()) {
+      <span class="pending">Elérhetőség ellenőrzése…</span>
+    } @else if (f.username().touched()) {
+      @for (e of f.username().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+    <span class="note">Foglalt nevek a demóban: admin, root, test, angular, demo</span>
+  </div>
+
+  <!-- Ország -->
+  <div class="field">
+    <label for="country">Ország</label>
+    <select id="country" [formField]="f.country"
+            [class.invalid]="f.country().touched() && f.country().invalid()">
+      <option value="">– válassz –</option>
+      @for (c of countries; track c) {
+        <option [value]="c">{{ c }}</option>
+      }
+    </select>
+    @if (f.country().touched()) {
+      @for (e of f.country().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+  </div>
+
+  <!-- Egyedi control: csillagos értékelés (FormValueControl) -->
+  <div class="field">
+    <label>Értékelés</label>
+    <app-star-rating [formField]="f.rating" />
+    @if (f.rating().touched()) {
+      @for (e of f.rating().errors(); track e.kind) {
+        <span class="error">{{ e.message }}</span>
+      }
+    }
+  </div>
+
+  <!-- Dinamikus címkék – modell signal frissítése, nem FormArray.push() -->
+  <div class="field">
+    <label>Címkék</label>
+    <div class="tags">
+      @for (tag of f.tags().value(); track $index) {
+        <span class="tag">
+          {{ tag }}
+          <button type="button" (click)="removeTag($index)" aria-label="törlés">×</button>
+        </span>
+      }
+    </div>
+    <div class="tag-input">
+      <input #tagInput type="text" placeholder="Új címke…"
+             (keydown.enter)="$event.preventDefault(); addTag(tagInput)" />
+      <button type="button" class="secondary" (click)="addTag(tagInput)">Hozzáad</button>
+    </div>
+    @for (e of f.tags().errors(); track e.kind) {
+      <span class="error">{{ e.message }}</span>
+    }
+  </div>
+
+  <!-- Hírlevél (checkbox) -->
+  <div class="checkbox-field">
+    <input id="newsletter" type="checkbox" [formField]="f.newsletter" />
+    <label for="newsletter">Kérek hírlevelet</label>
+  </div>
+
+  <button type="submit" class="primary" [disabled]="f().submitting()">
+    Regisztráció
+  </button>
+</form>
+
+@if (submitted(); as data) {
+  <div class="result">
+    <strong>Sikeres beküldés! 🎉</strong>
+    <pre>{{ data | json }}</pre>
+  </div>
+}

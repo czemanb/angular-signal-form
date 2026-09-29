@@ -1,0 +1,55 @@
+:host {
+  display: block;
+  max-width: 680px;
+}
+
+.strategy {
+  margin-bottom: 2rem;
+}
+
+h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+hr {
+  border: none;
+  border-top: 2px dashed #e2e8f0;
+  margin: 2rem 0;
+}
+
+.code-hint {
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.78rem;
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+
+  strong {
+    color: #f59e0b;
+  }
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 0.35rem;
+
+  &.new {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  &.legacy {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+}

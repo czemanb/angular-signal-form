@@ -1,0 +1,120 @@
+<h2>Migráció – fokozatos átállás Signal Formsra</h2>
+<p class="note">
+  Két stratégia a meglévő kód és az új Signal Forms kombinálásához.
+  Mindkettő <strong>éles, production-ready</strong> Angular 22-ben.
+</p>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+  A: TOP-DOWN — compatForm
+  Az új Signal Form a tetőn; a meglévő FormControl beágyazva a signal modellbe.
+════════════════════════════════════════════════════════════════════════════ -->
+<section class="strategy">
+  <h3>A: Top-down — <code>compatForm</code></h3>
+  <p class="note">
+    A jelszó egy <strong>meglévő</strong> <code>FormControl</code> komplex vállalati
+    validátorokkal (min 8 karakter, nagybetű + szám). Nem írjuk újra — a
+    <code>compatForm</code> beágyazza a signal modellbe. Az e-mail mező új,
+    signal validátorral. A <code>f().valid()</code> mindkét mezőt számolja.
+  </p>
+
+  <div class="code-hint">
+    <code>signal(&#123; email: '', password: <strong>legacyCtrl</strong> &#125;)</code>
+    → <code>compatForm(model, schema)</code>
+    → <code>extractValue(f)</code>
+  </div>
+
+  <form (submit)="onTopDownSubmit($event)">
+    <div class="field">
+      <label for="td-email">E-mail <span class="badge new">signal</span></label>
+      <input id="td-email" type="email" [formField]="topDownForm.email"
+             [class.invalid]="topDownForm.email().touched() && topDownForm.email().invalid()" />
+      @if (topDownForm.email().touched()) {
+        @for (e of topDownForm.email().errors(); track e.kind) {
+          <span class="error">{{ e.message }}</span>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="td-password">Jelszó <span class="badge legacy">legacy FormControl</span></label>
+      <input id="td-password" type="password" [formField]="topDownForm.password"
+             [class.invalid]="topDownForm.password().touched() && topDownForm.password().invalid()" />
+      @if (topDownForm.password().touched()) {
+        @for (e of topDownForm.password().errors(); track e.kind) {
+          <span class="error">{{ compatMessage(e.kind) }}</span>
+        }
+      }
+      <small class="note">Formátum: min 8 kar., legalább 1 nagybetű + 1 szám (pl. <em>Password1</em>)</small>
+    </div>
+
+    <button type="submit" class="primary">Beküldés</button>
+  </form>
+
+  @if (topDownSubmitted(); as data) {
+    <div class="result">
+      <strong>extractValue() eredménye:</strong>
+      <pre>{{ data | json }}</pre>
+    </div>
+  }
+</section>
+
+<hr />
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+  B: BOTTOM-UP — SignalFormControl
+  A meglévő FormGroup marad; az email mező SignalFormControl-ra cserélve.
+════════════════════════════════════════════════════════════════════════════ -->
+<section class="strategy">
+  <h3>B: Bottom-up — <code>SignalFormControl</code></h3>
+  <p class="note">
+    A meglévő <code>FormGroup</code> változatlan. Csak az e-mail mező lett
+    <code>SignalFormControl</code> — ez extends <code>AbstractControl</code>, ezért
+    a <code>form.valid</code>, <code>markAllAsTouched()</code>, stb. változatlan.
+    A sablonban <code>[formField]="emailCtrl.fieldTree"</code> adja a signal-os kötést,
+    a jelszó marad <code>formControlName</code>-mel.
+  </p>
+
+  <div class="code-hint">
+    <code>new SignalFormControl('', schema)</code>
+    → <code>new FormGroup(&#123; email: emailCtrl, password: new FormControl(...) &#125;)</code>
+    → <code>[formField]="emailCtrl.fieldTree"</code>
+  </div>
+
+  <form [formGroup]="bottomUpForm" (ngSubmit)="onBottomUpSubmit()">
+    <div class="field">
+      <label for="bu-email">E-mail <span class="badge new">SignalFormControl</span></label>
+      <!-- fieldTree ad hozzáférést a signal állapothoz -->
+      <input id="bu-email" type="email" [formField]="emailCtrl.fieldTree"
+             [class.invalid]="emailCtrl.fieldTree().touched() && emailCtrl.fieldTree().invalid()" />
+      @if (emailCtrl.fieldTree().touched()) {
+        @for (e of emailCtrl.fieldTree().errors(); track e.kind) {
+          <span class="error">{{ e.message }}</span>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="bu-password">Jelszó <span class="badge legacy">Reactive FormControl</span></label>
+      <!-- A régi formControlName változatlan -->
+      <input id="bu-password" type="password" formControlName="password"
+             [class.invalid]="bottomUpForm.controls.password.touched && bottomUpForm.controls.password.invalid" />
+      @if (bottomUpForm.controls.password.touched) {
+        @if (bottomUpForm.controls.password.hasError('required')) {
+          <span class="error">A jelszó kötelező</span>
+        }
+        @if (bottomUpForm.controls.password.hasError('minlength')) {
+          <span class="error">Legalább 8 karakter</span>
+        }
+      }
+    </div>
+
+    <button type="submit" class="primary">Beküldés</button>
+  </form>
+
+  @if (bottomUpSubmitted(); as data) {
+    <div class="result">
+      <strong>form.getRawValue() eredménye:</strong>
+      <pre>{{ data | json }}</pre>
+    </div>
+  }
+</section>
