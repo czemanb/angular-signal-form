@@ -57,7 +57,8 @@
   <div class="field">
     <label for="t-username">Felhasználónév</label>
     <input id="t-username" type="text" name="username" #username="ngModel"
-           [(ngModel)]="model.username" required (blur)="checkUsername()"
+           [ngModel]="model.username" (ngModelChange)="onUsernameChange($event)"
+           required (blur)="checkUsername()"
            [class.invalid]="(username.touched && username.invalid) || usernameTaken()" />
     @if (usernameChecking()) {
       <span class="pending">Elérhetőség ellenőrzése…</span>

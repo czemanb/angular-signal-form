@@ -27,6 +27,7 @@ import { UsernameAvailabilityService } from '../shared/username-availability.ser
 })
 export class TemplateDriven {
   private readonly usernames = inject(UsernameAvailabilityService);
+  private usernameCheckId = 0;
 
   protected readonly countries = COUNTRIES;
   protected readonly model: Registration = emptyRegistration();
@@ -37,15 +38,35 @@ export class TemplateDriven {
   protected readonly usernameTaken = signal(false);
   protected newTag = '';
 
-  protected async checkUsername(): Promise<void> {
+  protected onUsernameChange(value: string): void {
+    this.model.username = value;
+    this.usernameCheckId++;
+    this.usernameTaken.set(false);
+    this.usernameChecking.set(false);
+  }
+
+  protected async checkUsername(): Promise<boolean> {
+    const checkId = ++this.usernameCheckId;
+    const username = this.model.username;
     const value = this.model.username.trim();
+    this.usernameTaken.set(false);
     if (!value) {
-      this.usernameTaken.set(false);
-      return;
+      this.usernameChecking.set(false);
+      return false;
     }
     this.usernameChecking.set(true);
-    this.usernameTaken.set(await this.usernames.isTaken(value));
-    this.usernameChecking.set(false);
+    try {
+      const taken = await this.usernames.isTaken(value);
+      if (checkId !== this.usernameCheckId || username !== this.model.username) {
+        return false;
+      }
+      this.usernameTaken.set(taken);
+      return !taken;
+    } finally {
+      if (checkId === this.usernameCheckId) {
+        this.usernameChecking.set(false);
+      }
+    }
   }
 
   protected addTag(): void {
@@ -60,13 +81,14 @@ export class TemplateDriven {
     this.model.tags.splice(index, 1);
   }
 
-  protected onSubmit(form: NgForm): void {
+  protected async onSubmit(form: NgForm): Promise<void> {
+    const usernameAvailable = await this.checkUsername();
     const valid =
       form.valid &&
       this.model.password === this.model.confirmPassword &&
       this.model.rating >= 1 &&
       this.model.tags.length >= 1 &&
-      !this.usernameTaken();
+      usernameAvailable;
     if (!valid) {
       Object.values(form.controls).forEach((c) => c.markAsTouched());
       this.submitted.set(null);

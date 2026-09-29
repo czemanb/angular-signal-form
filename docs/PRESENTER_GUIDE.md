@@ -28,7 +28,7 @@ git log --oneline --reverse
 ### 1. commit – App shell, navigáció, placeholder oldalak
 
 ```bash
-git checkout HEAD~9   # vagy a konkrét hash
+git checkout 6a61b1d
 ```
 
 **Mit mutass:** Nyisd meg a böngészőt. Négy tab látható a tetején: Signal Forms,
@@ -51,7 +51,7 @@ commit…" placeholder van.
 ### 2. commit – Közös adatmodell és service
 
 ```bash
-git checkout HEAD~8
+git checkout 6c05e10
 ```
 
 **Mit mutass:** Nyisd meg a `src/app/shared/registration.model.ts` és
@@ -74,7 +74,7 @@ git checkout HEAD~8
 ### 3. commit – Template-driven regisztrációs form
 
 ```bash
-git checkout HEAD~7
+git checkout bce5c1d
 ```
 
 **Mit mutass:** Kattints a „Template-driven" tabra. Töltsd ki a formot, próbáld
@@ -100,7 +100,7 @@ ki a validációt. Mutasd meg a TypeScript fájlt — milyen kevés van benne.
 ### 4. commit – Reactive Forms + ControlValueAccessor custom control
 
 ```bash
-git checkout HEAD~6
+git checkout f3611b9
 ```
 
 **Mit mutass:** Váltj a „Reactive" tabra. Próbáld ki a formot. Majd mutasd meg
@@ -132,7 +132,7 @@ egymás mellett a `reactive.ts`-t és a `star-rating-cva.ts`-t.
 ### 5. commit – Az első Signal Form: signal(), form(), [formField]
 
 ```bash
-git checkout HEAD~5
+git checkout 8527266
 ```
 
 **Mit mutass:** Kattints a „Signal Forms" tabra. Gépelj bele az e-mail mezőbe
@@ -160,7 +160,7 @@ git checkout HEAD~5
 ### 6. commit – Beépített validátorok és hibaüzenetek
 
 ```bash
-git checkout HEAD~4
+git checkout 39715dd
 ```
 
 **Mit mutass:** Kattints be az e-mail mezőbe, majd ki anélkül, hogy gépeltél
@@ -189,7 +189,7 @@ volna. Gépelj egy érvénytelen e-mailt. Mutasd meg, ahogy a hibák megjelennek
 ### 7. commit – Cross-field validáció és async username-ellenőrzés
 
 ```bash
-git checkout HEAD~3
+git checkout ce7d2d3
 ```
 
 **Mit mutass:** Töltsd ki a jelszó mezőt, majd írj mást a megerősítésbe —
@@ -217,7 +217,7 @@ mutasd a hibát. Ezután gépelj `admin`-t a felhasználónévbe — mutasd a pe
 ### 8. commit – FormValueControl: signal-alapú custom control
 
 ```bash
-git checkout HEAD~2
+git checkout 145f27b
 ```
 
 **Mit mutass:** Görgess le a csillag-értékelőhöz. Kattints csillagokra. Mutasd
@@ -246,7 +246,7 @@ meg egymás mellett a `star-rating.ts` (FormValueControl) és a `star-rating-cva
 ### 9. commit – Teljes regisztrációs form: tags, [formRoot], submit flow
 
 ```bash
-git checkout HEAD~1
+git checkout 54f0fb5
 ```
 
 **Mit mutass:** Töltsd ki az egész formot. Próbálj meg szubmittolni hibás
@@ -273,7 +273,7 @@ adatokkal — a hibák megjelennek. Töltsd ki jól, és mutasd a sikeres bekül
 ### 10. commit – Összehasonlítás táblázat
 
 ```bash
-git checkout HEAD   # vagy a branch neve
+git checkout eaa3760
 ```
 
 **Mit mutass:** Kattints az „Összehasonlítás" tabra. Görgess végig a táblázaton.
@@ -302,10 +302,10 @@ Mutasd a CVA vs FormValueControl kódrészleteket.
 
 ---
 
-### 11. commit – FormRoot auto-submit refaktor (opcionális kitérő)
+### 12. commit – FormRoot auto-submit refaktor (opcionális kitérő)
 
 ```bash
-git checkout HEAD~2   # refactor(signal/5) commit
+git checkout 74d7f7c   # refactor(signal/5) commit
 ```
 
 **Mit mutass:** Nyisd meg a `signal-forms.ts`-t. Mutasd meg a `form()` harmadik
@@ -328,10 +328,10 @@ argumentumát és a `submission` opciót.
 
 ---
 
-### 12. commit – Migráció: compatForm (top-down) és SignalFormControl (bottom-up)
+### 13. commit – Migráció: compatForm (top-down) és SignalFormControl (bottom-up)
 
 ```bash
-git checkout HEAD   # a branch teteje
+git checkout fdbc99d
 ```
 
 **Mit mutass:** Kattints a „Migráció" tabra. Próbáld ki mindkét formot. Töltsd

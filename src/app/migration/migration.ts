@@ -1,3 +1,4 @@
+import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { email, FormField, minLength, required } from '@angular/forms/signals';
@@ -29,7 +30,7 @@ function enterprisePasswordValidator() {
 @Component({
   selector: 'app-migration',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormField, ReactiveFormsModule],
+  imports: [FormField, ReactiveFormsModule, JsonPipe],
   templateUrl: './migration.html',
   styleUrls: ['../shared/form.scss', './migration.scss'],
 })
