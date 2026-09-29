@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: hu-HU
+reviews:
+  profile: assertive
+  path_instructions:
+    - path: "src/app/**/*.ts"
+      instructions: |
+        Angular 21+ projekt, Signal Forms demó.
+        - Csak a template-ben használt tagok legyenek `protected`, belső állapot `private`; ne legyen indokolatlanul public.
+        - `any` típus tilos, használj konkrét típust (pl. `SubmitEvent`).
+        - OnPush + signalok; ne legyen nem használt import a komponens `imports` tömbjében.
+    - path: "src/app/**/*.html"
+      instructions: |
+        Új control flow (@if/@for) használata kötelező. Ellenőrizd a hibaüzenetek megjelenítését és az akadálymentességet (label/for).
+    - path: "src/app/shared/**"
+      instructions: |
+        Megosztott demó-kód: a magyarázó JSDoc kommentek az előadás részei, ne töröljük őket.
